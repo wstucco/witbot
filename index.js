@@ -22,19 +22,26 @@ function Witbot (witToken) {
       // only consider the 1st outcome
       if (res.outcomes && res.outcomes.length > 0) {
         var outcome = res.outcomes[0]
-        var intent = outcome.intent
-        args.push(outcome)
-        if (intents._intents[intent]) {
-          intents._intents[intent].forEach(function (registration) {
-            if (!matched && outcome.confidence >= registration.confidence) {
-              matched = true
-              registration.fn.apply(undefined, args)
-            }
-          })
-        } else if (intents._any) {
-          matched = true
-          intents._any.apply(undefined, args)
-        }
+
+        args.push(outcome);
+
+        outcome.entities.intent.forEach(function(intent) {
+
+          var intent_name = intent.value;
+
+          args.push(outcome)
+          if (intents._intents[intent_name]) {
+            intents._intents[intent_name].forEach(function (registration) {
+              if (!matched && intent.confidence >= registration.confidence) {
+                matched = true
+                registration.fn.apply(undefined, args)
+              }
+            })
+          } else if (intents._any) {
+            matched = true
+            intents._any.apply(undefined, args)
+          }
+        });
       }
 
       // there were no matched outcomes or matched routes
